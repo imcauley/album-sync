@@ -111,17 +111,13 @@ impl MyApp {
             .source_albums
             .iter()
             .map(|entry| {
-                if entry.name == selected_album {
-                    Album {
-                        name: entry.name.clone(),
-                        path: entry.path.clone(),
-                        selected: !entry.selected,
-                    }
-                } else {
-                    entry.clone()
+                let mut album = entry.clone();
+                if album.name == selected_album {
+                    album.selected = !album.selected;
                 }
+                album
             })
-            .collect()
+            .collect();
     }
 
     fn view(&self) -> iced::Element<Message> {
@@ -142,6 +138,6 @@ impl MyApp {
 
         window = window.push(button("Select Source Directory").on_press(Message::SelectSourceDir));
         window = window.push(button("Select Target Directory").on_press(Message::SelectTargetDir));
-        return window.into();
+        return iced::widget::scrollable(window).into();
     }
 }
