@@ -1,0 +1,16 @@
+[package]
+name = "album_sync"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+iced = { version = "0.13.1", features = [
+    "tokio",
+    "image",
+    "svg",
+    "tokio",
+    "canvas",
+    "advanced",
+] }
+tokio = { version = "1.44.2", features = ["time", "fs", "io-util"] }
+rfd = { version = "0.15.4" }
