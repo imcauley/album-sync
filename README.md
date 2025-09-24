@@ -5,5 +5,6 @@
 - [x] Can select target directory
 - [ ] Can scroll list
 - [x] Select albums to add
+- [x] Shows what is copied over already
 - [ ] Copy contents to other directory
 - [ ] Show size of directory

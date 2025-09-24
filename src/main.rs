@@ -1,4 +1,5 @@
 use std::{
+    collections::HashSet,
     fs::{self},
     path::PathBuf,
 };
@@ -26,7 +27,6 @@ struct Album {
 
 #[derive(Default)]
 struct MyApp {
-    counter: usize,
     error_message: String,
     source_folder: Option<PathBuf>,
     target_folder: Option<PathBuf>,
@@ -35,24 +35,50 @@ struct MyApp {
 }
 
 fn load_albums(folder: Option<PathBuf>) -> Result<Vec<Album>, String> {
-    match &folder {
-        None => return Err("Could not open directory".to_string()),
-        Some(f) => match fs::read_dir(f.display().to_string()) {
-            Err(_) => return Err("Could not load directory".to_string()),
-            Ok(r) => {
-                return Ok(r
-                    .filter_map(|entry| entry.ok())
-                    .filter_map(|entry| {
-                        Some(Album {
-                            name: entry.file_name().into_string().unwrap(),
-                            path: entry.path(),
-                            selected: false,
-                        })
-                    })
-                    .collect())
+    let folder = folder.ok_or_else(|| "Could not open directory".to_string())?;
+
+    let entries = fs::read_dir(&folder).map_err(|_| "Could not load directory".to_string())?;
+
+    let albums = entries
+        .filter_map(Result::ok)
+        .map(|entry| Album {
+            name: entry.file_name().into_string().unwrap_or_default(),
+            path: entry.path(),
+            selected: false,
+        })
+        .collect();
+
+    Ok(albums)
+}
+
+fn diff_on_albums_list(source_albums: Vec<Album>, target_albums: Vec<Album>) -> Vec<Album> {
+    if source_albums.is_empty() {
+        return source_albums;
+    }
+
+    if target_albums.is_empty() {
+        return source_albums;
+    }
+
+    let target_hash: HashSet<String> = target_albums
+        .iter()
+        .map(|album| album.name.clone())
+        .collect();
+
+    source_albums
+        .iter()
+        .map(|entry| {
+            if target_hash.contains(&entry.name) {
+                Album {
+                    name: entry.name.clone(),
+                    path: entry.path.clone(),
+                    selected: !entry.selected,
+                }
+            } else {
+                entry.clone()
             }
-        },
-    };
+        })
+        .collect()
 }
 
 impl MyApp {
@@ -64,6 +90,8 @@ impl MyApp {
                     Err(e) => self.error_message = e,
                     Ok(albums) => self.source_albums = albums,
                 }
+                self.source_albums =
+                    diff_on_albums_list(self.source_albums.clone(), self.target_albums.clone());
             }
             Message::SelectTargetDir => {
                 self.target_folder = FileDialog::new().set_directory("~").pick_folder();
@@ -71,6 +99,8 @@ impl MyApp {
                     Err(e) => self.error_message = e,
                     Ok(albums) => self.target_albums = albums,
                 }
+                self.source_albums =
+                    diff_on_albums_list(self.source_albums.clone(), self.target_albums.clone());
             }
             Message::Album(album_name) => self.select_album(album_name),
         }
