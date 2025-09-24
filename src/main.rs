@@ -13,8 +13,10 @@ fn main() -> iced::Result {
 #[derive(Debug, Clone)]
 enum Message {
     ButtonPressed,
+    Album(String),
 }
 
+#[derive(Clone, Debug)]
 struct Album {
     name: String,
     selected: bool,
@@ -32,7 +34,25 @@ impl MyApp {
     fn update(&mut self, message: Message) {
         match message {
             Message::ButtonPressed => self.load_albums(),
+            Message::Album(album_name) => self.select_album(album_name),
         }
+    }
+
+    fn select_album(&mut self, selected_album: String) {
+        self.source_albums = self
+            .source_albums
+            .iter()
+            .map(|entry| {
+                if entry.name == selected_album {
+                    Album {
+                        name: entry.name.clone(),
+                        selected: !entry.selected,
+                    }
+                } else {
+                    entry.clone()
+                }
+            })
+            .collect()
     }
 
     fn load_albums(&mut self) {
@@ -58,12 +78,21 @@ impl MyApp {
     }
 
     fn view(&self) -> iced::Element<Message> {
-        let test = self
-            .source_albums
-            .iter()
-            .map(|e| iced::widget::Text::new(e.name.clone()).into());
+        let test = self.source_albums.iter().map(|e| {
+            let style = if e.selected {
+                button::danger
+            } else {
+                button::primary
+            };
+
+            iced::widget::Button::new(iced::widget::Text::new(e.name.clone()))
+                .on_press(Message::Album(e.name.clone()))
+                .style(style)
+                .into()
+        });
 
         let mut window = iced::widget::Column::with_children(test);
+
         window = window.push(button("Increase").on_press(Message::ButtonPressed));
         return window.into();
     }
