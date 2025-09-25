@@ -6,5 +6,8 @@
 - [x] Can scroll list
 - [x] Select albums to add
 - [x] Shows what is copied over already
-- [ ] Copy contents to other directory
+- [x] Copy contents to other directory
 - [ ] Show size of directory
+- [ ] Put button above
+- [x] Sync button
+- [ ] Remove albums

@@ -1,5 +1,5 @@
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     fs::{self},
     path::PathBuf,
 };
@@ -15,6 +15,7 @@ fn main() -> iced::Result {
 enum Message {
     SelectSourceDir,
     SelectTargetDir,
+    Sync,
     Album(String),
 }
 
@@ -102,8 +103,44 @@ impl MyApp {
                 self.source_albums =
                     diff_on_albums_list(self.source_albums.clone(), self.target_albums.clone());
             }
+            Message::Sync => match self.sync_albums() {
+                Ok(_) => {}
+                Err(_) => self.error_message = "Error when syncing".to_string(),
+            },
             Message::Album(album_name) => self.select_album(album_name),
         }
+    }
+
+    fn sync_albums(&mut self) -> Result<(), std::io::Error> {
+        let mut existing_albums: HashMap<String, PathBuf> = HashMap::new();
+
+        let mut albums_to_add: Vec<PathBuf> = Vec::new();
+        let mut albums_to_remove: Vec<PathBuf> = Vec::new();
+
+        for album in &self.target_albums {
+            existing_albums.insert(album.name.clone(), album.path.clone());
+        }
+
+        for album in &self.source_albums {
+            if album.selected {
+                if !existing_albums.contains_key(&album.name) {
+                    albums_to_add.push(album.path.clone());
+                }
+            } else {
+                if existing_albums.contains_key(&album.name) {
+                    albums_to_remove.push(album.path.clone());
+                }
+            }
+        }
+
+        let options = fs_extra::dir::CopyOptions::new();
+        let _ = fs_extra::copy_items(
+            &albums_to_add,
+            self.target_folder.clone().unwrap(),
+            &options,
+        );
+
+        Ok(())
     }
 
     fn select_album(&mut self, selected_album: String) {
@@ -121,7 +158,7 @@ impl MyApp {
     }
 
     fn view(&self) -> iced::Element<Message> {
-        let test = self.source_albums.iter().map(|e| {
+        let album_buttons = self.source_albums.iter().map(|e| {
             let style = if e.selected {
                 button::danger
             } else {
@@ -134,10 +171,11 @@ impl MyApp {
                 .into()
         });
 
-        let mut window = iced::widget::Column::with_children(test);
+        let mut window = iced::widget::Column::with_children(album_buttons);
 
         window = window.push(button("Select Source Directory").on_press(Message::SelectSourceDir));
         window = window.push(button("Select Target Directory").on_press(Message::SelectTargetDir));
+        window = window.push(button("Sync").on_press(Message::Sync));
         return iced::widget::scrollable(window).into();
     }
 }
