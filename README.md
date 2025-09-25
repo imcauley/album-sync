@@ -11,3 +11,4 @@
 - [ ] Put button above
 - [x] Sync button
 - [x] Remove albums
+- [ ] Make an executable
