@@ -4,7 +4,10 @@ use std::{
     path::PathBuf,
 };
 
-use iced::widget::button;
+use iced::{
+    Length::Fill,
+    widget::{button, container},
+};
 use rfd::FileDialog;
 
 fn main() -> iced::Result {
@@ -172,11 +175,19 @@ impl MyApp {
                 .into()
         });
 
-        let mut window = iced::widget::Column::with_children(album_buttons);
+        let header = iced::widget::row![
+            button("Select Source Directory").on_press(Message::SelectSourceDir),
+            button("Select Target Directory").on_press(Message::SelectTargetDir),
+            button("Sync").on_press(Message::Sync)
+        ]
+        .spacing(10);
 
-        window = window.push(button("Select Source Directory").on_press(Message::SelectSourceDir));
-        window = window.push(button("Select Target Directory").on_press(Message::SelectTargetDir));
-        window = window.push(button("Sync").on_press(Message::Sync));
-        return iced::widget::scrollable(window).into();
+        let window = iced::widget::Column::with_children(album_buttons).spacing(5);
+
+        return container(iced::widget::scrollable(
+            iced::widget::column![header, window].spacing(20),
+        ))
+        .padding(20)
+        .into();
     }
 }
