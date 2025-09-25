@@ -8,7 +8,7 @@ use iced::widget::button;
 use rfd::FileDialog;
 
 fn main() -> iced::Result {
-    iced::run("My App", MyApp::update, MyApp::view)
+    iced::run("Album Sync", MyApp::update, MyApp::view)
 }
 
 #[derive(Debug, Clone)]
