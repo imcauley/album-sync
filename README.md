@@ -10,4 +10,4 @@
 - [ ] Show size of directory
 - [ ] Put button above
 - [x] Sync button
-- [ ] Remove albums
+- [x] Remove albums

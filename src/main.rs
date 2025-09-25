@@ -128,7 +128,7 @@ impl MyApp {
                 }
             } else {
                 if existing_albums.contains_key(&album.name) {
-                    albums_to_remove.push(album.path.clone());
+                    albums_to_remove.push(existing_albums.get(&album.name).unwrap().clone());
                 }
             }
         }
@@ -139,6 +139,7 @@ impl MyApp {
             self.target_folder.clone().unwrap(),
             &options,
         );
+        let _ = fs_extra::remove_items(&albums_to_remove);
 
         Ok(())
     }
