@@ -4,10 +4,7 @@ use std::{
     path::PathBuf,
 };
 
-use iced::{
-    Length::Fill,
-    widget::{button, container},
-};
+use iced::widget::{button, container};
 use rfd::FileDialog;
 
 fn main() -> iced::Result {
@@ -161,7 +158,7 @@ impl MyApp {
             .collect();
     }
 
-    fn view(&self) -> iced::Element<Message> {
+    fn view(&'_ self) -> iced::Element<'_, Message> {
         let album_buttons = self.source_albums.iter().map(|e| {
             let style = if e.selected {
                 button::danger
